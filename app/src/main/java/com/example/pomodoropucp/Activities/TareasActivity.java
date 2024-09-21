@@ -1,7 +1,9 @@
 package com.example.pomodoropucp.Activities;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,6 +26,7 @@ import com.example.pomodoropucp.Services.DummyService;
 import com.example.pomodoropucp.databinding.ActivityTareasBinding;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.IOException;
 import java.util.List;
 
 import retrofit2.Call;
@@ -38,11 +41,9 @@ public class TareasActivity extends AppCompatActivity {
     //Binding:
     ActivityTareasBinding binding;
 
-
     //Variables:
     Bundle data;
     String mensaje;
-    Usuario usuario;
     Tarea tareaEditada;
 
     @Override
@@ -51,10 +52,10 @@ public class TareasActivity extends AppCompatActivity {
         binding = ActivityTareasBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Back button c:
 
 
-        // Controlar el intent del Juego
+        // Controlar el intent de la actividad Pomodoro:
         Intent intentTimer= getIntent();
         TareaTodo tareaTodo = (TareaTodo) intentTimer.getSerializableExtra("tareaTodo");
         Usuario usuario = (Usuario) intentTimer.getSerializableExtra("usuario");
@@ -62,9 +63,7 @@ public class TareasActivity extends AppCompatActivity {
         binding.textNombre.setText(usuario.getFullName());
         binding.imageGender.setImageDrawable(getDrawable(usuario.isMale() ? R.drawable.man_24dp : R.drawable.woman_24dp));
 
-
         // Spinner:
-
         String [] listaTareasMod = new String[listaTareas.size()];
         for(Tarea tarea : listaTareas){
             listaTareasMod[listaTareas.indexOf(tarea)] = tarea.getTodo() + " - " + (tarea.isCompleted()?"Completado":"No completado");
@@ -77,12 +76,11 @@ public class TareasActivity extends AppCompatActivity {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-
+                Log.d("Hi", "onItemSelected: "+i);
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-
             }
         });
 
@@ -100,7 +98,7 @@ public class TareasActivity extends AppCompatActivity {
                 public void onResponse(Call<Tarea> call, Response<Tarea> response) {
                     if(response.isSuccessful()){
                         Tarea tarea = response.body();
-                        mensaje = "Se logró cambiar de estado a la tarea: '" + tarea.getTodo() + "' (" + (!tarea.isCompleted()?"'Completada'":"'No completada'") + ")";
+                        mensaje = "Se logró cambiar de estado a la tarea: '" + tarea.getTodo() + "' (" + (!tarea.isCompleted()?"Completada":"No completada") + ")";
                     }else{
                         mensaje = "No se puedo cambiar de estado a la tarea :(";
                     }

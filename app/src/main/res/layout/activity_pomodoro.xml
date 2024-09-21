@@ -88,7 +88,11 @@
                         android:id="@+id/textCorreo"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="a20211755@pucp.edu.pe" />
+                        android:text="a20211755@pucp.edu.pe"
+                        app:autoSizeMaxTextSize="14sp"
+                        app:autoSizeMinTextSize="7sp"
+                        app:autoSizeStepGranularity="2sp"
+                        app:autoSizeTextType="uniform" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -96,11 +100,10 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
+            android:layout_height="230dp"
+            android:gravity="bottom|center"
             android:orientation="vertical"
-            android:paddingHorizontal="30dp"
-            tools:gravity="center">
+            android:paddingHorizontal="30dp">
 
             <TextView
                 android:id="@+id/textContadorDescanso"
@@ -113,16 +116,16 @@
             <TextView
                 android:id="@+id/textContador"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="110dp"
                 android:layout_marginBottom="10dp"
-                android:text="25:00"
-                android:textAlignment="center"
-                android:textSize="90sp"
                 android:maxLines="1"
+                android:text="25:00"
+                android:textAlignment="viewStart"
+                android:textSize="90sp"
                 app:autoSizeMaxTextSize="90sp"
                 app:autoSizeMinTextSize="10sp"
                 app:autoSizeStepGranularity="2sp"
-                app:autoSizeTextType="uniform"/>
+                app:autoSizeTextType="uniform" />
 
             <Button
                 android:id="@+id/buttonCiclo"

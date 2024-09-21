@@ -1,13 +1,16 @@
 package com.example.pomodoropucp.Activities;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.work.WorkManager;
 
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
+import com.example.pomodoropucp.R;
 import com.example.pomodoropucp.Services.DummyService;
 import com.example.pomodoropucp.DTOs.Usuario;
 import com.example.pomodoropucp.databinding.ActivityLoginBinding;
@@ -15,11 +18,14 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.io.IOException;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -33,6 +39,7 @@ public class LoginActivity extends AppCompatActivity {
     TextInputLayout passwordLayout;
     Button iniciarSesion;
     boolean validacion = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +58,9 @@ public class LoginActivity extends AppCompatActivity {
         password = binding.fieldPassword;
         passwordLayout = binding.fieldPasswordLayout;
         iniciarSesion = binding.buttonIniciarSesion;
+
+        // Línea de código que probablemente no sea de mucha utilidad (algunos workers se ejecutan en background a pesar de volver a correr el app en Android Studio):
+        WorkManager.getInstance(binding.getRoot().getContext()).cancelAllWork();
 
         // Lógica:
         iniciarSesion.setOnClickListener(view -> {

@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:maxLines="1"
     android:padding="16dp"
-    android:text="DSADASDSADASDASDASDASSADASDASDASDSDDDDDDD"
+    android:text="Go bienvenida?"
     android:textColor="@color/black"
     android:textSize="18sp"
     app:autoSizeMaxTextSize="18sp"

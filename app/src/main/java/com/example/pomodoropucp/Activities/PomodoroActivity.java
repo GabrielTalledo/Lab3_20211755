@@ -1,7 +1,6 @@
 package com.example.pomodoropucp.Activities;
 
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -53,9 +52,15 @@ public class PomodoroActivity extends AppCompatActivity {
     // Binding:
     ActivityPomodoroBinding binding;
 
-    // Variables:
-    int tiempoEstudio = 2; // Modifique para probar :D
-    int tiempoDescanso = 160;
+    // ------------
+    //  Variables:
+    // ------------
+
+    // Tiempos, en segundos, a considerar para los periodos de estudio y descanso:
+    int tiempoEstudio = 25*60; // Modifique para probar :D
+    int tiempoDescanso = 5*60;
+
+
     boolean enDescanso = false;
     boolean enCiclo = false;
     boolean finished = false;
@@ -67,7 +72,6 @@ public class PomodoroActivity extends AppCompatActivity {
 
 
     // Launcher:
-
     ActivityResultLauncher<Intent> launcher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK) {
@@ -93,7 +97,6 @@ public class PomodoroActivity extends AppCompatActivity {
         binding.textContadorDescanso.setText("Descanso: "+actualizarContadorVista(tiempoDescanso,0,false));
 
         // Restaurar en caso se rote la pantalla:
-
         if(savedInstanceState != null){
             textContadorDescanso = savedInstanceState.getString("textContador");
             binding.textContadorDescanso.setText(textContadorDescanso);
@@ -228,15 +231,12 @@ public class PomodoroActivity extends AppCompatActivity {
         WorkManager.getInstance(binding.getRoot().getContext()).getWorkInfoByIdLiveData(uuid).observe(PomodoroActivity.this, workInfo -> {
             if(workInfo != null) {
                 if(workInfo.getState() == WorkInfo.State.RUNNING){
-                    Log.d("aaaa", "primerWORKINFO UWU ");
                     Data progreso = workInfo.getProgress();
                     int cuentaActual = progreso.getInt("CuentaActual",0);
                     actualizarContadorVista(enDescanso?tiempoDescanso:tiempoEstudio,cuentaActual,true);
                 } else if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-                    Log.d("aaaa", "primerWORKINFO acabado ");
                     actualizarContadorVista(enDescanso?tiempoDescanso:tiempoEstudio,workInfo.getOutputData().getInt("CuentaActual",0),true);
                     if(enDescanso && enCiclo){
-                        Log.d("aaaa", "pendescandito ");
                         lanzarConfetti(0xFF8E4953);
                         lanzarDialog("¡Atención!","Terminó el tiempo de descanso. Dale al botón de inicio para empezar otro ciclo.");
                         buttonCiclo.setIcon(getDrawable(R.drawable.play_arrow_24dp));
@@ -245,36 +245,22 @@ public class PomodoroActivity extends AppCompatActivity {
                         enCiclo = false;
                         finished = true;
                     }else{
-
-                        //MediaPlayer mediaPlayer = MediaPlayer.create(binding.getRoot().getContext(),R.raw.jazz_riff);
-                        //try {
-                        //    mediaPlayer.prepare();
-                        //    mediaPlayer.start();
-                        //} catch (IOException e) {
-                        //    e.printStackTrace();
-                        //}
-
                         tareasUsuario();
-
                         binding.textContadorDescanso.setText("En descanso");
                         enDescanso = true;
-
-
                         iniciarCuenta(tiempoDescanso);
                         WorkManager.getInstance(this).getWorkInfoByIdLiveData(uuid).observe(this, workInfo2 -> {
                             if(workInfo2 != null) {
                                 if(workInfo2.getState() == WorkInfo.State.RUNNING){
-                                    Log.d("aaaa", "segundoWORKINFO acabado UWU");
                                     Data progreso = workInfo2.getProgress();
                                     int cuentaActual = progreso.getInt("CuentaActual",0);
                                     actualizarContadorVista(tiempoDescanso,cuentaActual,true);
                                 } else if (workInfo2.getState() == WorkInfo.State.SUCCEEDED) {
-                                    Log.d("aaaa", "segundo WORKINFO acabado ");
                                     actualizarContadorVista(tiempoEstudio,workInfo.getOutputData().getInt("CuentaActual",0),true);
                                     lanzarConfetti(0xFF8E4953);
-                                    lanzarDialog("¡Atención!","Terminó el tiempo de descanso. Dale al botón de reinicio para empezar otro ciclo.");
+                                    lanzarDialog("¡Atención!","Terminó el tiempo de descanso. Dale al botón de inicio para empezar otro ciclo.");
                                     buttonCiclo.setIcon(getDrawable(R.drawable.play_arrow_24dp));
-                                    binding.textContadorDescanso.setText("Fin de ciclo");
+                                    binding.textContadorDescanso.setText("Finalizó el ciclo");
                                     enDescanso = false;
                                     enCiclo = false;
                                     finished = true;
@@ -295,7 +281,6 @@ public class PomodoroActivity extends AppCompatActivity {
             binding.bienvenida.setText(usuario.isMale()?"BIENVENIDO:":"BIENVENIDA:");
         }
     }
-
 
     public void lanzarDialog(String titulo, String msg){
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
@@ -326,7 +311,6 @@ public class PomodoroActivity extends AppCompatActivity {
 
     public void iniciarCuenta(int tiempoSegundos){
         uuid = UUID.randomUUID();
-        Log.d("pipi", "ENTRE A LA FUNCION!!!!!");
         Data data = new Data.Builder()
                 .putInt("TiempoSegundos", tiempoSegundos)
                 .build();
@@ -364,14 +348,12 @@ public class PomodoroActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
         if (id == R.id.buttonLogOut) {
             WorkManager.getInstance(binding.getRoot().getContext()).cancelAllWork();
             Intent intent = new Intent(PomodoroActivity.this, LoginActivity.class);
             startActivity(intent);
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 }

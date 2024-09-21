@@ -67,6 +67,7 @@
             android:layout_height="60dp"
             android:backgroundTint="@color/md_theme_primary"
             android:text="Iniciar sesión"
-            android:textColor="@color/white" />
+            android:textColor="@color/white"
+            app:rippleColor="@color/md_theme_onSecondary" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
