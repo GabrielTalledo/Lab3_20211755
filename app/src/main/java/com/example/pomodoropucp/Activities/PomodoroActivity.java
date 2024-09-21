@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkInfo;
@@ -29,8 +30,10 @@ import androidx.work.WorkRequest;
 
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
+import com.example.pomodoropucp.ContadorViewModel;
 import com.example.pomodoropucp.DTOs.Usuario;
 import com.example.pomodoropucp.R;
+import com.example.pomodoropucp.ViewModelFactory;
 import com.example.pomodoropucp.Workers.Contador;
 import com.example.pomodoropucp.databinding.ActivityLoginBinding;
 import com.example.pomodoropucp.databinding.ActivityPomodoroBinding;
@@ -134,50 +137,46 @@ public class PomodoroActivity extends AppCompatActivity {
                 Snackbar.make(binding.getRoot(), "Reinició el ciclo Pomodoro!", Snackbar.LENGTH_LONG).show();
             }
 
-            // 25 minutos:
-            iniciarCuenta(tiempoEstudio);
+            // Iniciamos cuentas:
+
+            ContadorViewModel viewModel = new ViewModelProvider(this, new ViewModelFactory(getApplication())).get(ContadorViewModel.class);
+
             // Configuramos un observador:
-            WorkManager.getInstance(binding.getRoot().getContext()).getWorkInfoByIdLiveData(uuid).observe(PomodoroActivity.this, workInfo -> {
-                if(workInfo != null) {
-                    if(workInfo.getState() == WorkInfo.State.RUNNING){
-                        Data progreso = workInfo.getProgress();
-                        int cuentaActual = progreso.getInt("CuentaActual",0);
-                        actualizarContadorVista(tiempoEstudio,cuentaActual);
-                        Log.d("aiuda", "cuenta es: "+  cuentaActual + "  "+binding.textContador.getText());
-                    } else if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-                        Log.d("aiuda", "SUCCED PRIMER CONTAOR");
-                        // 5 minutos:
-                        actualizarContadorVista(tiempoEstudio,workInfo.getOutputData().getInt("CuentaActual",0));
-                        binding.textContadorDescanso.setText("En descanso");
-                        enDescanso = true;
-                        lanzarConfetti(0xFFAED581);
-                        Log.d("aiuda", "SUCCED PRIMER CONTAORrr");
-                        iniciarCuenta(tiempoDescanso);
-                        Log.d("aiuda", "SUCCED PRIMER CONTAORRRRRe");
 
-                        WorkManager.getInstance(this).getWorkInfoByIdLiveData(uuid).observe(this, workInfo2 -> {
-                            if(workInfo2 != null) {
-                                if(workInfo2.getState() == WorkInfo.State.RUNNING){
-                                    Data progreso = workInfo2.getProgress();
-                                    int cuentaActual = progreso.getInt("CuentaActual",0);
-                                    actualizarContadorVista(tiempoDescanso,cuentaActual);
-                                } else if (workInfo2.getState() == WorkInfo.State.SUCCEEDED) {
-                                    actualizarContadorVista(tiempoEstudio,workInfo.getOutputData().getInt("CuentaActual",0));
-                                    lanzarConfetti(0xFF8E4953);
-                                    lanzarDialog("¡Atención!","Terminó el tiempo de descanso. Dale al botón de reinicio para empezar otro ciclo.");
-                                    buttonCiclo.setIcon(getDrawable(R.drawable.play_arrow_24dp));
-                                    binding.textContadorDescanso.setText("Fin de ciclo");
-                                    enCiclo = false;
-                                }
+            viewModel.getWorkInfoLiveData().observe(this, workInfoList -> {
+                if (workInfoList != null && !workInfoList.isEmpty()) {
+                    for (WorkInfo workInfo : workInfoList) {
+                        Log.d("aiuda", "state es: "+  workInfo.getState());
+                        if (workInfo.getState() == WorkInfo.State.RUNNING) {
+                            Log.d("aiuda", "cuenta es: "+  workInfo.getProgress());
+                            Data progreso = workInfo.getProgress();
+                            int cuentaActual = progreso.getInt("CuentaActual",0);
+                            actualizarContadorVista(tiempoEstudio,cuentaActual);
+                            Log.d("aiuda", "cuenta es: "+  cuentaActual + "  "+binding.textContador.getText());
+                        }else if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
+                            if (workInfo.getTags().contains("estudioRequest")) {
+                                Log.d("aiuda", "estudio 1");
+                                actualizarContadorVista(tiempoEstudio,workInfo.getOutputData().getInt("CuentaActual",0));
+                                binding.textContadorDescanso.setText("En descanso");
+                                enDescanso = true;
+                                lanzarDialog("¡Felicidades!","Empezó el tiempo de descanso!");
+                                lanzarConfetti(0xFFAED581);
+                                Log.d("aiuda", "SUCCED PRIMER CONTAORrr");
+                            } else if (workInfo.getTags().contains("descansoRequest")) {
+                                Log.d("aiuda", "estudio 2");
+                                actualizarContadorVista(tiempoEstudio,workInfo.getOutputData().getInt("CuentaActual",0));
+                                lanzarConfetti(0xFF8E4953);
+                                lanzarDialog("¡Atención!","Terminó el tiempo de descanso. Dale al botón de reinicio para empezar otro ciclo.");
+                                buttonCiclo.setIcon(getDrawable(R.drawable.play_arrow_24dp));
+                                binding.textContadorDescanso.setText("Fin de ciclo");
+                                enCiclo = false;
                             }
-                        });
-
-                        // Se comprueba si tiene tareas:
-                        lanzarDialog("¡Felicidades!","Empezó el tiempo de descanso!");
-
+                        }
                     }
                 }
             });
+
+
         });
 
     }
