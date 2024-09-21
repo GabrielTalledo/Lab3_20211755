@@ -30,6 +30,9 @@ public class Contador extends Worker {
             }catch (InterruptedException e){
                 return Result.failure();
             }
+            if(isStopped()){
+                return Result.failure();
+            }
         }
 
         Data data = new Data.Builder().putInt("CuentaActual",cuentaActual).build();

@@ -13,7 +13,6 @@ public class Usuario implements Serializable {
     private String gender;
 
     //Constructor:
-
     public Usuario(String email, String firstName, String gender, String lastName, Integer userId, String username) {
         this.email = email;
         this.firstName = firstName;

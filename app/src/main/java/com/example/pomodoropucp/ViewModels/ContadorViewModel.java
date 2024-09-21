@@ -1,4 +1,4 @@
-package com.example.pomodoropucp;
+package com.example.pomodoropucp.ViewModels;
 
 import android.app.Application;
 
@@ -10,12 +10,10 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkContinuation;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
 
 import com.example.pomodoropucp.Workers.Contador;
 
 import java.util.List;
-import java.util.UUID;
 
 public class ContadorViewModel extends ViewModel {
 
