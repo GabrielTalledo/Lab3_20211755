@@ -1,6 +1,7 @@
 package com.example.pomodoropucp.Activities;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -30,6 +31,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -236,13 +238,21 @@ public class PomodoroActivity extends AppCompatActivity {
                     if(enDescanso && enCiclo){
                         Log.d("aaaa", "pendescandito ");
                         lanzarConfetti(0xFF8E4953);
-                        lanzarDialog("¡Atención!","Terminó el tiempo de descanso. Dale al botón de reinicio para empezar otro ciclo.");
+                        lanzarDialog("¡Atención!","Terminó el tiempo de descanso. Dale al botón de inicio para empezar otro ciclo.");
                         buttonCiclo.setIcon(getDrawable(R.drawable.play_arrow_24dp));
                         binding.textContadorDescanso.setText("Fin de ciclo");
                         enDescanso = false;
                         enCiclo = false;
                         finished = true;
                     }else{
+
+                        //MediaPlayer mediaPlayer = MediaPlayer.create(binding.getRoot().getContext(),R.raw.jazz_riff);
+                        //try {
+                        //    mediaPlayer.prepare();
+                        //    mediaPlayer.start();
+                        //} catch (IOException e) {
+                        //    e.printStackTrace();
+                        //}
 
                         tareasUsuario();
 

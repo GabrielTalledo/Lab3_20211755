@@ -64,7 +64,7 @@
             android:id="@+id/buttonIniciarSesion"
             style="@style/Widget.Material3.Button.ElevatedButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:backgroundTint="@color/md_theme_primary"
             android:text="Iniciar sesión"
             android:textColor="@color/white" />

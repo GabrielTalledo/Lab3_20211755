@@ -100,16 +100,16 @@ public class TareasActivity extends AppCompatActivity {
                 public void onResponse(Call<Tarea> call, Response<Tarea> response) {
                     if(response.isSuccessful()){
                         Tarea tarea = response.body();
-                        mensaje = "Se cambió de estado exitósamente a la tarea: '" + tarea.getTodo() + "' (Se marcó como " + (tarea.isCompleted()?"'completeda'":"'no completada'") + ")";
+                        mensaje = "Se logró cambiar de estado a la tarea: '" + tarea.getTodo() + "' (" + (!tarea.isCompleted()?"'Completada'":"'No completada'") + ")";
                     }else{
                         mensaje = "No se puedo cambiar de estado a la tarea :(";
                     }
 
-                    Snackbar.make(binding.getRoot(), mensaje, Snackbar.LENGTH_LONG).show();
-                    //Intent resultIntent = new Intent();
-                    //resultIntent.putExtra("mensaje",mensaje);
-                    //setResult(RESULT_OK, resultIntent);
-                    //supportFinishAfterTransition();
+                    //Snackbar.make(binding.getRoot(), mensaje, Snackbar.LENGTH_LONG).show();
+                    Intent resultIntent = new Intent();
+                    resultIntent.putExtra("mensaje",mensaje);
+                    setResult(RESULT_OK, resultIntent);
+                    supportFinishAfterTransition();
                 }
 
                 @Override
