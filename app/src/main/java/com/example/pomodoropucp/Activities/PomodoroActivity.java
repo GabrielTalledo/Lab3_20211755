@@ -57,6 +57,7 @@ public class PomodoroActivity extends AppCompatActivity {
     boolean enDescanso = false;
     boolean enCiclo = false;
     boolean finished = false;
+    List<Tarea> listaTareas;
     MaterialButton buttonCiclo;
     String textContadorDescanso;
     Usuario usuario;
@@ -87,6 +88,7 @@ public class PomodoroActivity extends AppCompatActivity {
 
         // Botón
         buttonCiclo = (MaterialButton) binding.buttonCiclo;
+        binding.textContadorDescanso.setText("Descanso: "+actualizarContadorVista(tiempoDescanso,0,false));
 
         // Restaurar en caso se rote la pantalla:
 
@@ -183,8 +185,6 @@ public class PomodoroActivity extends AppCompatActivity {
 
     // Funciones:
 
-
-
     public void tareasUsuario(){
         DummyService dummyService = new Retrofit.Builder()
                 .baseUrl("https://dummyjson.com")
@@ -196,7 +196,7 @@ public class PomodoroActivity extends AppCompatActivity {
             public void onResponse(Call<TareaTodo> call, Response<TareaTodo> response) {
                 if(response.isSuccessful()){
                     TareaTodo tareaTodo = response.body();
-                    List<Tarea> listaTareas = tareaTodo.getTodos();
+                    listaTareas = tareaTodo.getTodos();
 
                     if(!listaTareas.isEmpty()){
                         // Vamos a la activity del reloj POMODORO:
@@ -206,10 +206,12 @@ public class PomodoroActivity extends AppCompatActivity {
                         launcher.launch(intent);
                     }else{
                         lanzarDialog("¡Felicidades!","Empezó el tiempo de descanso!");
+                        lanzarConfetti(0xFFAED581);
                     }
 
                 }else{
                     lanzarDialog("¡Felicidades!","Empezó el tiempo de descanso!");
+                    lanzarConfetti(0xFFAED581);
                 }
             }
 
@@ -246,7 +248,8 @@ public class PomodoroActivity extends AppCompatActivity {
 
                         binding.textContadorDescanso.setText("En descanso");
                         enDescanso = true;
-                        lanzarConfetti(0xFFAED581);
+
+
                         iniciarCuenta(tiempoDescanso);
                         WorkManager.getInstance(this).getWorkInfoByIdLiveData(uuid).observe(this, workInfo2 -> {
                             if(workInfo2 != null) {

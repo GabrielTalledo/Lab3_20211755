@@ -21,7 +21,7 @@ public class Contador extends Worker {
         int tiempoSegundos = getInputData().getInt("TiempoSegundos",25*60);
         Log.d("TIEMPO TOTAL",""+tiempoSegundos);
         int cuentaActual;
-        for(cuentaActual=0;cuentaActual<tiempoSegundos;cuentaActual++){
+        for(cuentaActual=0;cuentaActual<=tiempoSegundos;cuentaActual++){
 
             setProgressAsync(new Data.Builder().putInt("CuentaActual",cuentaActual).build());
             try{
@@ -35,7 +35,7 @@ public class Contador extends Worker {
             }
         }
 
-        Data data = new Data.Builder().putInt("CuentaActual",cuentaActual).build();
+        Data data = new Data.Builder().putInt("CuentaActual",cuentaActual-1).build();
 
         return Result.success(data);
     }

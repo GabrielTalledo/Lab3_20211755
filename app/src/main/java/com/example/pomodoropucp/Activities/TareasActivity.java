@@ -100,7 +100,7 @@ public class TareasActivity extends AppCompatActivity {
                 public void onResponse(Call<Tarea> call, Response<Tarea> response) {
                     if(response.isSuccessful()){
                         Tarea tarea = response.body();
-                        mensaje = "Se cambió de estado exitósamente a la tarea: " + tarea.getTodo() + " (Se marcó como " + (tarea.isCompleted()?"completeda":"no completada.") + ")";
+                        mensaje = "Se cambió de estado exitósamente a la tarea: '" + tarea.getTodo() + "' (Se marcó como " + (tarea.isCompleted()?"'completeda'":"'no completada'") + ")";
                     }else{
                         mensaje = "No se puedo cambiar de estado a la tarea :(";
                     }
