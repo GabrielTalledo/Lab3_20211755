@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/buttonLogOut"
+        android:icon="@drawable/power_settings_new_24dp"
+        android:iconTint="@color/md_theme_onSecondaryFixedVariant"
+        android:iconTintMode="src_in"
+        android:title="Cerrar sesión"
+        app:showAsAction="always" />
+    <item
+        android:icon="@drawable/person_24dp"
+        android:iconTint="@color/md_theme_error"
+        android:iconTintMode="src_atop"
+        android:title="Item"
+        app:showAsAction="always" />
+</menu>
