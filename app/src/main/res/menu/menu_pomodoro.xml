@@ -9,10 +9,4 @@
         android:iconTintMode="src_in"
         android:title="Cerrar sesión"
         app:showAsAction="always" />
-    <item
-        android:icon="@drawable/person_24dp"
-        android:iconTint="@color/md_theme_error"
-        android:iconTintMode="src_atop"
-        android:title="Item"
-        app:showAsAction="always" />
 </menu>

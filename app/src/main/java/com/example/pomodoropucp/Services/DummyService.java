@@ -1,4 +1,6 @@
-package com.example.pomodoropucp;
+package com.example.pomodoropucp.Services;
+
+import com.example.pomodoropucp.DTOs.Usuario;
 
 import retrofit2.Call;
 import retrofit2.http.Field;

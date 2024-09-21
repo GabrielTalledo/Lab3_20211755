@@ -1,4 +1,4 @@
-package com.example.pomodoropucp;
+package com.example.pomodoropucp.DTOs;
 
 import java.io.Serializable;
 

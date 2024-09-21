@@ -1,25 +1,15 @@
 package com.example.pomodoropucp.Activities;
 
-import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
-import android.transition.Explode;
-import android.transition.Slide;
-import android.util.Log;
-import android.view.Gravity;
 import android.widget.Button;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
-import com.example.pomodoropucp.DummyService;
-import com.example.pomodoropucp.R;
-import com.example.pomodoropucp.Usuario;
+import com.example.pomodoropucp.Services.DummyService;
+import com.example.pomodoropucp.DTOs.Usuario;
 import com.example.pomodoropucp.databinding.ActivityLoginBinding;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -52,6 +42,7 @@ public class LoginActivity extends AppCompatActivity {
         // Animación/Transición:
         YoYo.with(Techniques.ZoomInUp).duration(2000).playOn(binding.logoPomodoro);
 
+        // Seteo de la vista:
         setContentView(binding.getRoot());
 
         // Obtenemos los campos y botón:
@@ -87,8 +78,6 @@ public class LoginActivity extends AppCompatActivity {
             public void onResponse(Call<Usuario> call, Response<Usuario> response) {
                 if(response.isSuccessful()){
                     user = response.body();
-                    // NOTA: Use Snackbars en vez de Toast para usar mas elementos propios de Material!
-                    Snackbar.make(binding.getRoot(), "Inicio de sesión exitoso!", Snackbar.LENGTH_LONG).show();
                     // Vamos a la activity del reloj POMODORO:
                     Intent intent = new Intent(LoginActivity.this, PomodoroActivity.class);
                     intent.putExtra("Usuario", user);
