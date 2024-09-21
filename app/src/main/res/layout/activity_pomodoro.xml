@@ -95,12 +95,12 @@
         </com.google.android.material.card.MaterialCardView>
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical"
             android:paddingHorizontal="30dp"
-            tools:gravity="bottom">
+            tools:gravity="center">
 
             <TextView
                 android:id="@+id/textContadorDescanso"
@@ -112,13 +112,17 @@
 
             <TextView
                 android:id="@+id/textContador"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:autoSizeTextType="uniform"
                 android:text="25:00"
                 android:textAlignment="center"
-                android:textSize="90sp" />
+                android:textSize="90sp"
+                android:maxLines="1"
+                app:autoSizeMaxTextSize="90sp"
+                app:autoSizeMinTextSize="10sp"
+                app:autoSizeStepGranularity="2sp"
+                app:autoSizeTextType="uniform"/>
 
             <Button
                 android:id="@+id/buttonCiclo"

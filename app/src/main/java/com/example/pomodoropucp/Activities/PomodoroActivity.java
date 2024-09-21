@@ -4,8 +4,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.transition.Explode;
 import android.transition.Slide;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,6 +16,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -55,7 +58,7 @@ public class PomodoroActivity extends AppCompatActivity {
     ActivityPomodoroBinding binding;
 
     // Variables:
-    int tiempoEstudio = 10; // Modifique para probar :D
+    int tiempoEstudio = 25; // Modifique para probar :D
     int tiempoDescanso = 9;
     boolean enDescanso = false;
     boolean enCiclo = false;
@@ -73,19 +76,40 @@ public class PomodoroActivity extends AppCompatActivity {
         // Seteo de la vista:
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
-        actualizarContadorVista(tiempoEstudio,0);
-        WorkManager.getInstance(this).cancelAllWork();
 
-        // Usuario:
+        // Botón
+        buttonCiclo = (MaterialButton) binding.buttonCiclo;
 
-        usuario = (Usuario) getIntent().getSerializableExtra("Usuario");
-        if(usuario != null){
-            setearCard(usuario);
-            // NOTA: Use Snackbars en vez de Toast para usar mas elementos propios de Material!
-            Snackbar.make(binding.getRoot(), "Inicio de sesión exitoso!", Snackbar.LENGTH_LONG).show();
+        // Restaurar en caso se rote la pantalla:
+
+        if(savedInstanceState != null){
+            textContadorDescanso = savedInstanceState.getString("textContador");
+            binding.textContadorDescanso.setText(textContadorDescanso);
+            enDescanso = savedInstanceState.getBoolean("enDescanso");
+            enCiclo = savedInstanceState.getBoolean("enCiclo");
+            usuario =  (Usuario) savedInstanceState.getSerializable("usuario");
+            uuid = (UUID) savedInstanceState.getSerializable("uuid");
+        }else{
+            actualizarContadorVista(tiempoEstudio,0);
+            WorkManager.getInstance(this).cancelAllWork();
         }
 
+        // Usuario:
+        if(getIntent() != null && savedInstanceState == null){
+            usuario = (Usuario) getIntent().getSerializableExtra("Usuario");
+            if(usuario != null){
+                // NOTA: Use Snackbars en vez de Toast para usar mas elementos propios de Material!
+                Snackbar.make(binding.getRoot(), "Inicio de sesión exitoso!", Snackbar.LENGTH_LONG).show();
+            }
+        }
+        setearCard(usuario);
 
+        // Botón x2:
+        if(enCiclo){
+            buttonCiclo.setIcon(getDrawable(R.drawable.refresh_24dp));
+        }else{
+            buttonCiclo.setIcon(getDrawable(R.drawable.play_arrow_24dp));
+        }
 
         // Animación/Transición:
         YoYo.with(Techniques.ZoomIn).duration(3000).playOn(binding.cardUsuario);
@@ -94,22 +118,7 @@ public class PomodoroActivity extends AppCompatActivity {
         YoYo.with(Techniques.SlideInUp).duration(4000).playOn(binding.buttonCiclo);
 
 
-        // Restaurar en caso se rote la pantalla:
-
-
-
-
-
         // Lógica:
-
-        // Botón
-        buttonCiclo = (MaterialButton) binding.buttonCiclo;
-
-        if(enCiclo){
-            buttonCiclo.setIcon(getDrawable(R.drawable.refresh_24dp));
-        }else{
-            buttonCiclo.setIcon(getDrawable(R.drawable.play_arrow_24dp));
-        }
 
         // Control del ciclo:
         buttonCiclo.setOnClickListener(view -> {
@@ -128,20 +137,23 @@ public class PomodoroActivity extends AppCompatActivity {
             // 25 minutos:
             iniciarCuenta(tiempoEstudio);
             // Configuramos un observador:
-            WorkManager.getInstance(this).getWorkInfoByIdLiveData(uuid).observe(this, workInfo -> {
+            WorkManager.getInstance(binding.getRoot().getContext()).getWorkInfoByIdLiveData(uuid).observe(PomodoroActivity.this, workInfo -> {
                 if(workInfo != null) {
                     if(workInfo.getState() == WorkInfo.State.RUNNING){
                         Data progreso = workInfo.getProgress();
                         int cuentaActual = progreso.getInt("CuentaActual",0);
                         actualizarContadorVista(tiempoEstudio,cuentaActual);
+                        Log.d("aiuda", "cuenta es: "+  cuentaActual + "  "+binding.textContador.getText());
                     } else if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-
+                        Log.d("aiuda", "SUCCED PRIMER CONTAOR");
                         // 5 minutos:
                         actualizarContadorVista(tiempoEstudio,workInfo.getOutputData().getInt("CuentaActual",0));
                         binding.textContadorDescanso.setText("En descanso");
                         enDescanso = true;
                         lanzarConfetti(0xFFAED581);
+                        Log.d("aiuda", "SUCCED PRIMER CONTAORrr");
                         iniciarCuenta(tiempoDescanso);
+                        Log.d("aiuda", "SUCCED PRIMER CONTAORRRRRe");
 
                         WorkManager.getInstance(this).getWorkInfoByIdLiveData(uuid).observe(this, workInfo2 -> {
                             if(workInfo2 != null) {
@@ -170,13 +182,27 @@ public class PomodoroActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        textContadorDescanso = binding.textContadorDescanso.getText().toString();
+        outState.putString("textContador",textContadorDescanso);
+        outState.putBoolean("enDescanso",enDescanso);
+        outState.putBoolean("enCiclo",enCiclo);
+        outState.putSerializable("usuario",usuario);
+        outState.putSerializable("uuid",uuid);
+    }
+
     // Funciones:
 
     public void setearCard(Usuario usuario){
-        binding.textNombreCompleto.setText(usuario.getFullName());
-        binding.textCorreo.setText(usuario.getEmail());
-        binding.imageGender.setImageDrawable(usuario.isMale()?getDrawable(R.drawable.man_24dp):getDrawable(R.drawable.woman_24dp));
+        if(usuario!=null){
+            binding.textNombreCompleto.setText(usuario.getFullName());
+            binding.textCorreo.setText(usuario.getEmail());
+            binding.imageGender.setImageDrawable(usuario.isMale()?getDrawable(R.drawable.man_24dp):getDrawable(R.drawable.woman_24dp));
+        }
     }
+
 
     public void lanzarDialog(String titulo, String msg){
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
@@ -206,7 +232,6 @@ public class PomodoroActivity extends AppCompatActivity {
     }
 
     public void iniciarCuenta(int tiempoSegundos){
-
         uuid = UUID.randomUUID();
         Data data = new Data.Builder()
                 .putInt("TiempoSegundos", tiempoSegundos)
@@ -215,7 +240,7 @@ public class PomodoroActivity extends AppCompatActivity {
                 .setId(uuid)
                 .setInputData(data)
                 .build();
-        WorkManager.getInstance(this).enqueue(workRequest);
+        WorkManager.getInstance(binding.getRoot().getContext()).enqueue(workRequest);
     }
 
     public void actualizarContadorVista(int tiempoTotal,int cuentaActual){
