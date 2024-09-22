@@ -19,13 +19,16 @@
         <activity
             android:name=".Activities.TareasActivity"
             android:exported="false"
-            android:parentActivityName=".Activities.PomodoroActivity"/>
+            android:parentActivityName=".Activities.PomodoroActivity"
+            android:configChanges="orientation|screenSize"/>
         <activity
             android:name=".Activities.PomodoroActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="orientation|screenSize"/>
         <activity
             android:name=".Activities.LoginActivity"
-            android:exported="true">
+            android:exported="true"
+            android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

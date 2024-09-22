@@ -60,7 +60,6 @@ public class PomodoroActivity extends AppCompatActivity {
     int tiempoEstudio = 25*60; // Modifique para probar :D
     int tiempoDescanso = 5*60;
 
-
     boolean enDescanso = false;
     boolean enCiclo = false;
     boolean finished = false;
@@ -97,6 +96,8 @@ public class PomodoroActivity extends AppCompatActivity {
         binding.textContadorDescanso.setText("Descanso: "+actualizarContadorVista(tiempoDescanso,0,false));
 
         // Restaurar en caso se rote la pantalla:
+        // Nota: En el manifiesto, si retira la opción "android:configChanges="orientation|screenSize"" de la actividad
+        //       igual se mantiene la información con la siguiente lógica:
         if(savedInstanceState != null){
             textContadorDescanso = savedInstanceState.getString("textContador");
             binding.textContadorDescanso.setText(textContadorDescanso);

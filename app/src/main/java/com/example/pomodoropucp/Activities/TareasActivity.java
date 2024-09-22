@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +28,8 @@ import com.example.pomodoropucp.databinding.ActivityTareasBinding;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -44,7 +47,9 @@ public class TareasActivity extends AppCompatActivity {
     //Variables:
     Bundle data;
     String mensaje;
+    List<Tarea> listaTareas;
     Tarea tareaEditada;
+    ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,30 +64,18 @@ public class TareasActivity extends AppCompatActivity {
         Intent intentTimer= getIntent();
         TareaTodo tareaTodo = (TareaTodo) intentTimer.getSerializableExtra("tareaTodo");
         Usuario usuario = (Usuario) intentTimer.getSerializableExtra("usuario");
-        List<Tarea> listaTareas = tareaTodo.getTodos();
+        listaTareas = tareaTodo.getTodos();
         binding.textNombre.setText(usuario.getFullName());
         binding.imageGender.setImageDrawable(getDrawable(usuario.isMale() ? R.drawable.man_24dp : R.drawable.woman_24dp));
 
         // Spinner:
-        String [] listaTareasMod = new String[listaTareas.size()];
+        ArrayList<String> listaTareasMod = new ArrayList<>();
         for(Tarea tarea : listaTareas){
-            listaTareasMod[listaTareas.indexOf(tarea)] = tarea.getTodo() + " - " + (tarea.isCompleted()?"Completado":"No completado");
+            listaTareasMod.add(tarea.getTodo() + " - " + (tarea.isCompleted()?"Completado":"No completado"));
         }
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_layout, listaTareasMod);
+        adapter = new ArrayAdapter<>(this, R.layout.spinner_layout, listaTareasMod);
         Spinner spinner = binding.spinnerTareas;
         spinner.setAdapter(adapter);
-
-        // Handler de items:
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.d("Hi", "onItemSelected: "+i);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-            }
-        });
 
         binding.buttonCambiarEstado.setOnClickListener(view -> {
             tareaEditada = listaTareas.get(binding.spinnerTareas.getSelectedItemPosition());
@@ -97,17 +90,21 @@ public class TareasActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(Call<Tarea> call, Response<Tarea> response) {
                     if(response.isSuccessful()){
+                        int posicion = binding.spinnerTareas.getSelectedItemPosition();
                         Tarea tarea = response.body();
-                        mensaje = "Se logró cambiar de estado a la tarea: '" + tarea.getTodo() + "' (" + (!tarea.isCompleted()?"Completada":"No completada") + ")";
+                        mensaje = "Se cambió exitosamente el estado de la tarea a " + (tareaEditada.isCompleted()?"'Completada'.":"'No completada'.");
+                        // Actualizamos el Spinner:
+                        actualizarSpinner();
                     }else{
                         mensaje = "No se puedo cambiar de estado a la tarea :(";
                     }
 
-                    //Snackbar.make(binding.getRoot(), mensaje, Snackbar.LENGTH_LONG).show();
-                    Intent resultIntent = new Intent();
-                    resultIntent.putExtra("mensaje",mensaje);
-                    setResult(RESULT_OK, resultIntent);
-                    supportFinishAfterTransition();
+                    Snackbar.make(binding.getRoot(), mensaje, Snackbar.LENGTH_LONG).show();
+                    // No leí bien el enunciado :S
+                    //Intent resultIntent = new Intent();
+                    //resultIntent.putExtra("mensaje",mensaje);
+                    //setResult(RESULT_OK, resultIntent);
+                    //supportFinishAfterTransition();
                 }
 
                 @Override
@@ -122,6 +119,16 @@ public class TareasActivity extends AppCompatActivity {
 
     // Funciones:
 
+    public void actualizarSpinner(){
+        ArrayList<String> listaTareasMod = new ArrayList<>();
+        for(Tarea tarea : listaTareas){
+            listaTareasMod.add(tarea.getTodo() + " - " + (tarea.isCompleted()?"Completado":"No completado"));
+        }
+        adapter.clear();
+        adapter.addAll(listaTareasMod);
+        adapter.notifyDataSetChanged();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_pomodoro, menu);
@@ -135,6 +142,7 @@ public class TareasActivity extends AppCompatActivity {
         if (id == R.id.buttonLogOut) {
             WorkManager.getInstance(binding.getRoot().getContext()).cancelAllWork();
             Intent intent = new Intent(TareasActivity.this, LoginActivity.class);
+            startActivity(intent);
             supportFinishAfterTransition();
             return true;
         }

@@ -115,12 +115,12 @@
 
             <TextView
                 android:id="@+id/textContador"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="110dp"
                 android:layout_marginBottom="10dp"
                 android:maxLines="1"
                 android:text="25:00"
-                android:textAlignment="viewStart"
+                android:textAlignment="center"
                 android:textSize="90sp"
                 app:autoSizeMaxTextSize="90sp"
                 app:autoSizeMinTextSize="10sp"
