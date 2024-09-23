@@ -52,14 +52,19 @@ public class ConfigActivity extends AppCompatActivity {
                 if(binding.fieldTiempo.getText().toString().equals("0")){
                     binding.fieldTiempoLayout.setError("El tiempo no puede ser 0 minutos!");
                 }else{
-                    Intent resultIntent = new Intent();
-                    if(isEstudio){
-                        resultIntent.putExtra("TiempoEstudio",binding.fieldTiempo.getText().toString());
+                    if(binding.fieldTiempo.getText().toString().isEmpty()){
+                        binding.fieldTiempoLayout.setError("Este campo no puede estar vacío!");
                     }else{
-                        resultIntent.putExtra("TiempoDescanso",binding.fieldTiempo.getText().toString());
+                        Intent resultIntent = new Intent();
+                        if(isEstudio){
+                            resultIntent.putExtra("TiempoEstudio",binding.fieldTiempo.getText().toString());
+                        }else{
+                            resultIntent.putExtra("TiempoDescanso",binding.fieldTiempo.getText().toString());
+                        }
+                        setResult(RESULT_OK,resultIntent);
+                        supportFinishAfterTransition();
                     }
-                    setResult(RESULT_OK,resultIntent);
-                    supportFinishAfterTransition();
+
 
                 }
             }

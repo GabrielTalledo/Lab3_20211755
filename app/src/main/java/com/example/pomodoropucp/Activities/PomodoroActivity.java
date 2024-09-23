@@ -59,8 +59,8 @@ public class PomodoroActivity extends AppCompatActivity {
     // ------------
 
     // Tiempos, en segundos, a considerar para los periodos de estudio y descanso:
-    int tiempoEstudio = 25*60; // Modifique para probar :D
-    int tiempoDescanso = 5*60;
+    int tiempoEstudio = 3; // Modifique para probar :D
+    int tiempoDescanso = 4;
 
     boolean enPausa = false;
     boolean enDescanso = false;
@@ -225,7 +225,7 @@ public class PomodoroActivity extends AppCompatActivity {
             if(enPausa){
                 buttonCiclo.setIcon(getDrawable(R.drawable.pause_24dp));
                 enPausa = false;
-                iniciarCuenta(tiempoEstudio,cuentaActual);
+                iniciarCuenta(enDescanso?tiempoDescanso:tiempoEstudio,cuentaActual);
                 setearObservador();
             }else{
 
@@ -345,7 +345,7 @@ public class PomodoroActivity extends AppCompatActivity {
                         finished = true;
                         cuentaActual = 0;
                         buttonCiclo.setVisibility(View.INVISIBLE);
-                        numCiclos += 1;
+                        //numCiclos += 1;
                     }else{
                         tareasUsuario();
                         binding.textContadorDescanso.setText("En descanso");
@@ -368,7 +368,7 @@ public class PomodoroActivity extends AppCompatActivity {
                                     finished = true;
                                     cuentaActual = 0;
                                     buttonCiclo.setVisibility(View.INVISIBLE);
-                                    numCiclos += 1;
+                                    //numCiclos += 1;
                                 }
                             }
                         });
