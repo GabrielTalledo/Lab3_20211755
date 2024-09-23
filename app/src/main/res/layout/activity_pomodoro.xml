@@ -28,6 +28,7 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:gravity="center|top"
@@ -88,7 +89,18 @@
                         android:id="@+id/textCorreo"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
                         android:text="a20211755@pucp.edu.pe"
+                        app:autoSizeMaxTextSize="14sp"
+                        app:autoSizeMinTextSize="7sp"
+                        app:autoSizeStepGranularity="2sp"
+                        app:autoSizeTextType="uniform" />
+
+                    <TextView
+                        android:id="@+id/textCiclo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Ciclo N°1"
                         app:autoSizeMaxTextSize="14sp"
                         app:autoSizeMinTextSize="7sp"
                         app:autoSizeStepGranularity="2sp"
@@ -100,7 +112,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="230dp"
+            android:layout_height="220dp"
             android:gravity="bottom|center"
             android:orientation="vertical"
             android:paddingHorizontal="30dp">
@@ -136,6 +148,7 @@
                 app:icon="@drawable/play_arrow_24dp"
                 app:iconGravity="textStart"
                 app:iconPadding="0dp" />
+
         </LinearLayout>
 
 
@@ -146,5 +159,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:layout_editor_absoluteY="670dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/buttonReiniciar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="30dp"
+        app:backgroundTint="@color/md_theme_inverseOnSurface"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/refresh_24dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

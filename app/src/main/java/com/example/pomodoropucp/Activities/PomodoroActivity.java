@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -60,9 +62,12 @@ public class PomodoroActivity extends AppCompatActivity {
     int tiempoEstudio = 25*60; // Modifique para probar :D
     int tiempoDescanso = 5*60;
 
+    boolean enPausa = false;
     boolean enDescanso = false;
     boolean enCiclo = false;
     boolean finished = false;
+    int cuentaActual = 0;
+    int numCiclos = 0;
     List<Tarea> listaTareas;
     MaterialButton buttonCiclo;
     String textContadorDescanso;
@@ -77,6 +82,16 @@ public class PomodoroActivity extends AppCompatActivity {
                     Intent resultIntent = result.getData();
                     if(resultIntent.getStringExtra("mensaje") != null){
                         Snackbar.make(binding.getRoot(), resultIntent.getStringExtra("mensaje"), Snackbar.LENGTH_LONG).show();
+                    }
+
+                    if(resultIntent.getStringExtra("TiempoEstudio") != null){
+                        tiempoEstudio = Integer.parseInt(resultIntent.getStringExtra("TiempoEstudio"))*60;
+                        actualizarContadorVista(tiempoEstudio,0,true);
+                    }
+
+                    if(resultIntent.getStringExtra("TiempoDescanso") != null){
+                        tiempoDescanso = Integer.parseInt(resultIntent.getStringExtra("TiempoDescanso"))*60;
+                        binding.textContadorDescanso.setText("Descanso: "+actualizarContadorVista(tiempoDescanso,0,false));
                     }
                 }
             }
@@ -93,6 +108,7 @@ public class PomodoroActivity extends AppCompatActivity {
 
         // Botón
         buttonCiclo = (MaterialButton) binding.buttonCiclo;
+        buttonCiclo.setVisibility(View.VISIBLE);
         binding.textContadorDescanso.setText("Descanso: "+actualizarContadorVista(tiempoDescanso,0,false));
 
         // Restaurar en caso se rote la pantalla:
@@ -130,10 +146,11 @@ public class PomodoroActivity extends AppCompatActivity {
             }
         }
         setearCard(usuario);
+        binding.textCiclo.setText("Aún no empezó un ciclo!");
 
         // Botón x2:
         if(enCiclo){
-            buttonCiclo.setIcon(getDrawable(R.drawable.refresh_24dp));
+            buttonCiclo.setIcon(getDrawable(R.drawable.pause_24dp));
         }else{
             buttonCiclo.setIcon(getDrawable(R.drawable.play_arrow_24dp));
         }
@@ -143,36 +160,117 @@ public class PomodoroActivity extends AppCompatActivity {
         YoYo.with(Techniques.SlideInUp).duration(2500).playOn(binding.textContadorDescanso);
         YoYo.with(Techniques.SlideInUp).duration(3200).playOn(binding.textContador);
         YoYo.with(Techniques.SlideInUp).duration(4000).playOn(binding.buttonCiclo);
+        YoYo.with(Techniques.SlideInUp).duration(4500).playOn(binding.buttonReiniciar);
 
         // -----------
         // - Lógica: -
         // -----------
 
         // Control del ciclo:
-        buttonCiclo.setOnClickListener(view -> {
-            finished = false;
-            enDescanso = false;
-            Log.d("pipi", "enCiclo: "+enCiclo);
-            Log.d("pipi", "enDescanso: "+enDescanso);
-            buttonCiclo.setIcon(getDrawable(R.drawable.refresh_24dp));
-            binding.textContadorDescanso.setText("Descanso: "+actualizarContadorVista(tiempoDescanso,0,false));
-            if(!enCiclo){
-                // Comenzamos el ciclo
-                enCiclo = true;
-                Snackbar.make(binding.getRoot(), "Comenzó el ciclo Pomodoro!", Snackbar.LENGTH_LONG).show();
-            }else{
-                // Reiniciamos el ciclo
-                detenerCuenta(uuid);
-                Snackbar.make(binding.getRoot(), "Reinició el ciclo Pomodoro!", Snackbar.LENGTH_LONG).show();
+
+        binding.textContador.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if(cuentaActual == 0){
+                    Intent intent = new Intent(PomodoroActivity.this, ConfigActivity.class);
+                    intent.putExtra("TiempoEstudio",""+tiempoEstudio);
+                    intent.putExtra("Nombre",usuario.getFirstName());
+                    launcher.launch(intent);
+                }
+                return false;
+            }
+        });
+
+        binding.textContadorDescanso.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if(cuentaActual == 0){
+                    Intent intent = new Intent(PomodoroActivity.this, ConfigActivity.class);
+                    intent.putExtra("TiempoDescanso",""+tiempoDescanso);
+                    intent.putExtra("Nombre",usuario.getFirstName());
+                    launcher.launch(intent);
+                }
+                return false;
+            }
+        });
+
+
+        binding.buttonReiniciar.setOnClickListener(view -> {
+            if(numCiclos != 0){
+                WorkManager.getInstance(binding.getRoot().getContext()).cancelAllWork();
+                buttonCiclo.setVisibility(View.VISIBLE);
+                cuentaActual = 0;
+                enCiclo = false;
+                enDescanso = false;
+                enPausa = false;
+
+                if(!finished){
+                    numCiclos -=1;
+                }
+                buttonCiclo.setIcon(getDrawable(R.drawable.play_arrow_24dp));
+                binding.textContadorDescanso.setText("Descanso: "+actualizarContadorVista(tiempoDescanso,0,false));
+                actualizarContadorVista(tiempoEstudio,0,true);
+                if(finished){
+                    iniciarCuenta(tiempoEstudio,0);
+                    Snackbar.make(binding.getRoot(), "Inició un nuevo ciclo Pomodoro!", Snackbar.LENGTH_LONG).show();
+                }else{
+                    Snackbar.make(binding.getRoot(), "Reinició el ciclo Pomodoro!", Snackbar.LENGTH_LONG).show();
+                }
             }
 
-            WorkManager.getInstance(binding.getRoot().getContext()).cancelWorkById(uuid);
 
-            // Iniciamos cuentas:
-            iniciarCuenta(tiempoEstudio);
+        });
 
-            // Configuramos un observador:
-            setearObservador();
+        buttonCiclo.setOnClickListener(view -> {
+            if(enPausa){
+                buttonCiclo.setIcon(getDrawable(R.drawable.pause_24dp));
+                enPausa = false;
+                iniciarCuenta(tiempoEstudio,cuentaActual);
+                setearObservador();
+            }else{
+
+                if(cuentaActual == 0){
+
+                    // Comenzamos el ciclo
+                    finished = false;
+                    enDescanso = false;
+                    numCiclos += 1;
+                    binding.textCiclo.setText("Ciclo N°"+numCiclos);
+                    Log.d("pipi", "enCiclo: "+enCiclo);
+                    Log.d("pipi", "enDescanso: "+enDescanso);
+                    buttonCiclo.setIcon(getDrawable(R.drawable.pause_24dp));
+                    binding.textContadorDescanso.setText("Descanso: "+actualizarContadorVista(tiempoDescanso,0,false));
+                    if(!enCiclo){
+                        enCiclo = true;
+                        Snackbar.make(binding.getRoot(), "Comenzó el ciclo Pomodoro!", Snackbar.LENGTH_LONG).show();
+                    }else{
+                        // Reiniciamos el ciclo
+                        detenerCuenta(uuid);
+                        Snackbar.make(binding.getRoot(), "Reinició el ciclo Pomodoro!", Snackbar.LENGTH_LONG).show();
+                    }
+
+                    WorkManager.getInstance(binding.getRoot().getContext()).cancelWorkById(uuid);
+
+                    // Iniciamos cuentas:
+                    iniciarCuenta(tiempoEstudio,0);
+
+                    // Configuramos un observador:
+                    setearObservador();
+
+
+                }else{
+                    if(enCiclo){
+                        // Pausamos el reloj:
+                        WorkManager.getInstance(binding.getRoot().getContext()).cancelWorkById(uuid);
+                        buttonCiclo.setIcon(getDrawable(R.drawable.play_arrow_24dp));
+                        enPausa = true;
+                    }
+
+                }
+
+
+            }
+
         });
 
     }
@@ -233,38 +331,44 @@ public class PomodoroActivity extends AppCompatActivity {
             if(workInfo != null) {
                 if(workInfo.getState() == WorkInfo.State.RUNNING){
                     Data progreso = workInfo.getProgress();
-                    int cuentaActual = progreso.getInt("CuentaActual",0);
+                    cuentaActual = progreso.getInt("CuentaActual",0);
                     actualizarContadorVista(enDescanso?tiempoDescanso:tiempoEstudio,cuentaActual,true);
                 } else if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
                     actualizarContadorVista(enDescanso?tiempoDescanso:tiempoEstudio,workInfo.getOutputData().getInt("CuentaActual",0),true);
                     if(enDescanso && enCiclo){
                         lanzarConfetti(0xFF8E4953);
-                        lanzarDialog("¡Atención!","Terminó el tiempo de descanso. Dale al botón de inicio para empezar otro ciclo.");
-                        buttonCiclo.setIcon(getDrawable(R.drawable.play_arrow_24dp));
+                        lanzarDialog("¡Atención!","Terminó el tiempo de descanso. Dale al botón de reinicio para empezar otro ciclo.");
+                        buttonCiclo.setIcon(getDrawable(R.drawable.refresh_24dp));
                         binding.textContadorDescanso.setText("Fin de ciclo");
                         enDescanso = false;
                         enCiclo = false;
                         finished = true;
+                        cuentaActual = 0;
+                        buttonCiclo.setVisibility(View.INVISIBLE);
+                        numCiclos += 1;
                     }else{
                         tareasUsuario();
                         binding.textContadorDescanso.setText("En descanso");
                         enDescanso = true;
-                        iniciarCuenta(tiempoDescanso);
+                        iniciarCuenta(tiempoDescanso,0);
                         WorkManager.getInstance(this).getWorkInfoByIdLiveData(uuid).observe(this, workInfo2 -> {
                             if(workInfo2 != null) {
                                 if(workInfo2.getState() == WorkInfo.State.RUNNING){
                                     Data progreso = workInfo2.getProgress();
-                                    int cuentaActual = progreso.getInt("CuentaActual",0);
+                                    cuentaActual = progreso.getInt("CuentaActual",0);
                                     actualizarContadorVista(tiempoDescanso,cuentaActual,true);
                                 } else if (workInfo2.getState() == WorkInfo.State.SUCCEEDED) {
                                     actualizarContadorVista(tiempoEstudio,workInfo.getOutputData().getInt("CuentaActual",0),true);
                                     lanzarConfetti(0xFF8E4953);
-                                    lanzarDialog("¡Atención!","Terminó el tiempo de descanso. Dale al botón de inicio para empezar otro ciclo.");
-                                    buttonCiclo.setIcon(getDrawable(R.drawable.play_arrow_24dp));
+                                    lanzarDialog("¡Atención!","Terminó el tiempo de descanso. Dale al botón de reinicio para empezar otro ciclo.");
+                                    buttonCiclo.setIcon(getDrawable(R.drawable.refresh_24dp));
                                     binding.textContadorDescanso.setText("Finalizó el ciclo");
                                     enDescanso = false;
                                     enCiclo = false;
                                     finished = true;
+                                    cuentaActual = 0;
+                                    buttonCiclo.setVisibility(View.INVISIBLE);
+                                    numCiclos += 1;
                                 }
                             }
                         });
@@ -310,10 +414,11 @@ public class PomodoroActivity extends AppCompatActivity {
         );
     }
 
-    public void iniciarCuenta(int tiempoSegundos){
+    public void iniciarCuenta(int tiempoSegundos,int cuentaActual){
         uuid = UUID.randomUUID();
         Data data = new Data.Builder()
                 .putInt("TiempoSegundos", tiempoSegundos)
+                .putInt("CuentaActualContador",cuentaActual)
                 .build();
         WorkRequest workRequest = new OneTimeWorkRequest.Builder(Contador.class)
                 .setId(uuid)
