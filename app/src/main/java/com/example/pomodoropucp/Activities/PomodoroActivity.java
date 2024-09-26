@@ -1,6 +1,14 @@
 package com.example.pomodoropucp.Activities;
 
+import static android.Manifest.permission.POST_NOTIFICATIONS;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -12,7 +20,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkInfo;
@@ -73,6 +84,7 @@ public class PomodoroActivity extends AppCompatActivity {
     String textContadorDescanso;
     Usuario usuario;
     UUID uuid;
+    String canal1 = "importanteDefault";
 
 
     // Launcher:
@@ -105,6 +117,9 @@ public class PomodoroActivity extends AppCompatActivity {
         // Seteo de la vista:
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
+
+        // Creación del canal de notificaciones:
+        crearCanalesNotificacion();
 
         // Botón
         buttonCiclo = (MaterialButton) binding.buttonCiclo;
@@ -200,13 +215,14 @@ public class PomodoroActivity extends AppCompatActivity {
                 WorkManager.getInstance(binding.getRoot().getContext()).cancelAllWork();
                 buttonCiclo.setVisibility(View.VISIBLE);
                 cuentaActual = 0;
+
+                if(!finished && enCiclo){
+                    numCiclos -=1;
+                }
+
                 enCiclo = false;
                 enDescanso = false;
                 enPausa = false;
-
-                if(!finished){
-                    numCiclos -=1;
-                }
                 buttonCiclo.setIcon(getDrawable(R.drawable.play_arrow_24dp));
                 binding.textContadorDescanso.setText("Descanso: "+actualizarContadorVista(tiempoDescanso,0,false));
                 actualizarContadorVista(tiempoEstudio,0,true);
@@ -334,6 +350,7 @@ public class PomodoroActivity extends AppCompatActivity {
                     cuentaActual = progreso.getInt("CuentaActual",0);
                     actualizarContadorVista(enDescanso?tiempoDescanso:tiempoEstudio,cuentaActual,true);
                 } else if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
+                    notificarImportanceEstudio();
                     actualizarContadorVista(enDescanso?tiempoDescanso:tiempoEstudio,workInfo.getOutputData().getInt("CuentaActual",0),true);
                     if(enDescanso && enCiclo){
                         lanzarConfetti(0xFF8E4953);
@@ -345,6 +362,7 @@ public class PomodoroActivity extends AppCompatActivity {
                         finished = true;
                         cuentaActual = 0;
                         buttonCiclo.setVisibility(View.INVISIBLE);
+                        notificarImportanceDescanso();
                         //numCiclos += 1;
                     }else{
                         tareasUsuario();
@@ -368,6 +386,7 @@ public class PomodoroActivity extends AppCompatActivity {
                                     finished = true;
                                     cuentaActual = 0;
                                     buttonCiclo.setVisibility(View.INVISIBLE);
+                                    notificarImportanceDescanso();
                                     //numCiclos += 1;
                                 }
                             }
@@ -461,5 +480,74 @@ public class PomodoroActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    // Notificaciones:
+
+    public void crearCanalesNotificacion() {
+
+        NotificationChannel channel = new NotificationChannel(canal1,
+                "Canal notificaciones default",
+                NotificationManager.IMPORTANCE_HIGH);
+        channel.setDescription("Canal para notificaciones con prioridad default");
+        channel.enableVibration(true);
+
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
+
+        pedirPermisos();
+    }
+
+    public void pedirPermisos() {
+        // TIRAMISU = 33
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ActivityCompat.checkSelfPermission(this, POST_NOTIFICATIONS) == PackageManager.PERMISSION_DENIED) {
+
+            ActivityCompat.requestPermissions(PomodoroActivity.this, new String[]{POST_NOTIFICATIONS}, 101);
+        }
+    }
+
+    public void notificarImportanceEstudio(){
+
+        //Crear notificación
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, canal1)
+                .setSmallIcon(R.drawable.logo_pomodoro)
+                .setContentTitle("Tiempo de trabajo terminado!")
+                .setContentText("El tiempo de descanso ya comenzó :D")
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setAutoCancel(true);
+
+        Notification notification = builder.build();
+
+        //Lanzar notificación
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+        if (ActivityCompat.checkSelfPermission(this, POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            notificationManager.notify(1, notification);
+        }
+
+    }
+
+    public void notificarImportanceDescanso(){
+
+        //Crear notificación
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, canal1)
+                .setSmallIcon(R.drawable.logo_pomodoro)
+                .setContentTitle("Tiempo de descanso y ciclo finalizado!")
+                .setContentText("Si desea continuar, reinicie el ciclo!")
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setAutoCancel(true);
+
+        Notification notification = builder.build();
+
+        //Lanzar notificación
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+        if (ActivityCompat.checkSelfPermission(this, POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            notificationManager.notify(1, notification);
+        }
+
     }
 }
